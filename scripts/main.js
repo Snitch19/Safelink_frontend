@@ -1,6 +1,6 @@
 function checkUrl() {
     const url = document.getElementById('urlInput').value;
-    fetch('/api/verify_url', {
+    fetch('safelinkback-production.up.railway.app/api/verify_url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url })

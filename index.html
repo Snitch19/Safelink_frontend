@@ -362,162 +362,264 @@
 
   <!-- script.js – solid behaviour, calls mock backend -->
   <script>
-    (function() {
-      const urlInput = document.getElementById('urlInput');
-      const verifyBtn = document.getElementById('verifyBtn');
-      const resultContainer = document.getElementById('resultContainer');
+    (function () {
 
-      // loading UI
-      function showLoadingState() {
-        resultContainer.innerHTML = `
-          <div class="result-card" style="background-color: #e9f0f9; border-left-color: #1e4a7a;">
-            <div class="flex-row" style="display: flex; align-items: center; gap: 1.2rem; padding: 0.8rem 0;">
-              <span class="spinner"></span>
-              <div>
-                <div style="font-weight:600; font-size:1.3rem; color:#0b3b5c;">Verifying link</div>
-                <div style="color:#1e4a7a;">contacting SafeLink AI ...</div>
-              </div>
+  const BACKEND_URL = "https://safelinkbackend-safelink.up.railway.app/scan-link";
+
+  const urlInput = document.getElementById("urlInput");
+  const verifyBtn = document.getElementById("verifyBtn");
+  const resultContainer = document.getElementById("resultContainer");
+
+  // ================================
+  // Loading UI
+  // ================================
+  function showLoadingState() {
+
+    resultContainer.innerHTML = `
+      <div class="result-card" style="background-color:#e9f0f9;border-left-color:#1e4a7a;">
+        <div style="display:flex;align-items:center;gap:1rem;padding:0.8rem 0;">
+          <span class="spinner"></span>
+          <div>
+            <div style="font-weight:600;font-size:1.2rem;color:#0b3b5c;">
+              Verifying link
+            </div>
+            <div style="color:#1e4a7a;">
+              Contacting SafeLink AI security engine...
             </div>
           </div>
-        `;
-      }
-
-      // display final result with solid background classes
-      function displayResult(data, url, timestamp) {
-        const status = data.status; // 'safe', 'danger', 'warning'
-        const message = data.message || '';
-
-        let bgClass = '';
-        let icon = '';
-        let title = '';
-
-        switch(status) {
-          case 'safe':
-            bgClass = 'result-safe';
-            icon = '🟢';
-            title = 'Safe to open';
-            break;
-          case 'danger':
-            bgClass = 'result-danger';
-            icon = '🔴';
-            title = 'Suspicious / Dangerous';
-            break;
-          case 'warning':
-            bgClass = 'result-warning';
-            icon = '🟡';
-            title = 'Caution advised';
-            break;
-          default:
-            bgClass = '';
-            icon = '⚪';
-            title = 'Scan complete';
-        }
-
-        const timeString = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second:'2-digit' });
-
-        const html = `
-          <div class="result-card ${bgClass}">
-            <div class="result-header">
-              <span class="result-icon">${icon}</span>
-              <span>${title}</span>
-            </div>
-            <div class="url-display">🔗 ${escapeHtml(url)}</div>
-            <div class="result-message">${escapeHtml(message) || 'No additional details.'}</div>
-            <div class="timestamp">
-              <span>⏱️ scanned at ${timeString}</span>
-              <span style="margin-left: auto;">🔍 AI verdict</span>
-            </div>
-          </div>
-        `;
-        resultContainer.innerHTML = html;
-      }
-
-      function escapeHtml(unsafe) {
-        if (!unsafe) return unsafe;
-        return unsafe.replace(/[&<>"]/g, function(m) {
-          if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;'; if(m === '"') return '&quot;';
-          return m;
-        });
-      }
-
-      function showError(errorText, url) {
-        const timeString = new Date().toLocaleTimeString();
-        const displayUrl = url ? escapeHtml(url) : '—';
-        resultContainer.innerHTML = `
-          <div class="result-card" style="background-color: #f8d7da; border-left-color: #dc3545; border-color: #dc3545;">
-            <div class="result-header">
-              <span class="result-icon">⚠️</span>
-              <span style="color:#721c24;">Verification failed</span>
-            </div>
-            <div class="url-display" style="border-color:#dc3545;">🔗 ${displayUrl}</div>
-            <div class="result-message" style="color:#a11f2f;">${escapeHtml(errorText)}</div>
-            <div class="timestamp" style="color:#a11f2f;">⏱️ ${timeString} · please retry</div>
-          </div>
-        `;
-      }
-
-      function isValidUrl(string) {
-        try {
-          const url = new URL(string);
-          return url.protocol === 'http:' || url.protocol === 'https:';
-        } catch (_) {
-          return false;
-        }
-      }
-
-      // main verify function (simulated backend)
-      
-      async function verifyLink() {
-  const rawUrl = urlInput.value.trim();
-
-  if (!rawUrl) {
-    showError('Please enter a link.', '');
-    return;
+        </div>
+      </div>
+    `;
   }
 
-  if (!isValidUrl(rawUrl)) {
-    showError('Invalid URL. Use http:// or https://', rawUrl);
-    return;
-  }
+  // ================================
+  // Escape HTML (security)
+  // ================================
+  function escapeHtml(unsafe) {
 
-  showLoadingState();
+    if (!unsafe) return unsafe;
 
-  try {
+    return unsafe.replace(/[&<>"]/g, function (m) {
 
-    const response = await fetch("https://safelinkbackend-safelink.up.railway.app/scan-link", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ url: rawUrl })
+      if (m === "&") return "&amp;";
+      if (m === "<") return "&lt;";
+      if (m === ">") return "&gt;";
+      if (m === '"') return "&quot;";
+
+      return m;
     });
+  }
 
-    if (!response.ok) {
-      throw new Error("Server error");
+  // ================================
+  // URL Validation
+  // ================================
+  function isValidUrl(string) {
+
+    try {
+
+      const url = new URL(string);
+
+      return url.protocol === "http:" || url.protocol === "https:";
+
+    } catch {
+
+      return false;
+    }
+  }
+
+  // ================================
+  // Display Result
+  // ================================
+  function displayResult(data, url, timestamp) {
+
+    const status = data.status;
+    const message = data.message || "";
+
+    let bgClass = "";
+    let icon = "";
+    let title = "";
+
+    if (status === "safe") {
+
+      bgClass = "result-safe";
+      icon = "🟢";
+      title = "Safe to open";
+
+    } else if (status === "danger") {
+
+      bgClass = "result-danger";
+      icon = "🔴";
+      title = "Suspicious / Dangerous";
+
+    } else if (status === "warning") {
+
+      bgClass = "result-warning";
+      icon = "🟡";
+      title = "Caution advised";
+
+    } else {
+
+      icon = "⚪";
+      title = "Scan complete";
+
     }
 
-    const data = await response.json();
+    const timeString = timestamp.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
 
-    // Convert backend result format if needed
-    let status = "safe";
+    resultContainer.innerHTML = `
+      <div class="result-card ${bgClass}">
+        <div class="result-header">
+          <span class="result-icon">${icon}</span>
+          <span>${title}</span>
+        </div>
 
-    if (data.status === "Malicious") status = "danger";
-    else if (data.status === "Suspicious") status = "warning";
-    else status = "safe";
+        <div class="url-display">
+          🔗 ${escapeHtml(url)}
+        </div>
 
-    const responseData = {
-      status: status,
-      message: data.message || "Scan completed by SafeLink AI"
-    };
+        <div class="result-message">
+          ${escapeHtml(message) || "No additional details"}
+        </div>
 
-    displayResult(responseData, rawUrl, new Date());
-
-  } catch (error) {
-    showError("Unable to reach SafeLink AI server.", rawUrl);
+        <div class="timestamp">
+          ⏱️ scanned at ${timeString}
+          <span style="margin-left:auto;">🔍 SafeLink AI verdict</span>
+        </div>
+      </div>
+    `;
   }
-}
+
+  // ================================
+  // Error Display
+  // ================================
+  function showError(errorText, url) {
+
+    const timeString = new Date().toLocaleTimeString();
+
+    resultContainer.innerHTML = `
+      <div class="result-card" style="background:#f8d7da;border-left-color:#dc3545;">
+        <div class="result-header">
+          <span class="result-icon">⚠️</span>
+          <span style="color:#721c24;">Verification failed</span>
+        </div>
+
+        <div class="url-display">
+          🔗 ${escapeHtml(url || "—")}
+        </div>
+
+        <div class="result-message" style="color:#a11f2f;">
+          ${escapeHtml(errorText)}
+        </div>
+
+        <div class="timestamp" style="color:#a11f2f;">
+          ⏱️ ${timeString} · please retry
+        </div>
+      </div>
+    `;
+  }
+
+  // ================================
+  // MAIN VERIFY FUNCTION
+  // ================================
+  async function verifyLink() {
+
+    const rawUrl = urlInput.value.trim();
+
+    if (!rawUrl) {
+
+      showError("Please enter a link.", "");
+      return;
+
+    }
+
+    if (!isValidUrl(rawUrl)) {
+
+      showError("Invalid URL. Use http:// or https://", rawUrl);
+      return;
+
+    }
+
+    showLoadingState();
+
+    try {
+
+      const response = await fetch(BACKEND_URL, {
+
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+          url: rawUrl
+        })
+
       });
-    })();
+
+      if (!response.ok) {
+
+        throw new Error("Server returned error");
+
+      }
+
+      const data = await response.json();
+
+      let status = "safe";
+
+      if (data.status === "Malicious") {
+
+        status = "danger";
+
+      } else if (data.status === "Suspicious") {
+
+        status = "warning";
+
+      } else {
+
+        status = "safe";
+
+      }
+
+      const resultData = {
+
+        status: status,
+        message: data.message || "Scan completed successfully"
+
+      };
+
+      displayResult(resultData, rawUrl, new Date());
+
+    } catch (error) {
+
+      showError("Unable to reach SafeLink AI server.", rawUrl);
+
+    }
+
+  }
+
+  // ================================
+  // Event Listeners
+  // ================================
+
+  verifyBtn.addEventListener("click", verifyLink);
+
+  urlInput.addEventListener("keypress", function (e) {
+
+    if (e.key === "Enter") {
+
+      e.preventDefault();
+      verifyLink();
+
+    }
+
+  });
+
+})();
   </script>
 </body>
 </html>

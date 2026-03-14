@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeLink AI · Link verification</title>
+  <!-- styles: solid white background, solid colors, no gradients -->
+  <style>
+    /* style.css – clean, solid colors, professional, security‑focused */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    }
+
+    body {
+      background-color: #ffffff;   /* solid white */
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    /* main card – white background, blue outline for trust */
+    .card {
+      max-width: 720px;
+      width: 100%;
+      background-color: #ffffff;
+      border-radius: 2rem;
+      padding: 2.5rem 2.2rem;
+      box-shadow: 0 20px 40px -10px rgba(0, 51, 102, 0.25);
+      border: 2px solid #1e4a7a;   /* solid dark blue */
+    }
+
+    /* header with shield + brand */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .logo-shield {
+      background-color: #0b3b5c;   /* solid dark blue */
+      width: 60px;
+      height: 60px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #dc3545;    /* solid red accent */
+    }
+
+    .logo-shield svg {
+      width: 38px;
+      height: 38px;
+    }
+
+    .brand-text {
+      line-height: 1.2;
+    }
+
+    .brand-name {
+      font-size: 2.3rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #0a2d4c;              /* solid dark blue */
+    }
+
+    .tagline {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #dc3545;               /* solid red */
+      border-left: 4px solid #28a745; /* solid green */
+      padding-left: 0.9rem;
+      margin-top: 0.2rem;
+      background-color: transparent;
+    }
+
+    /* verification card – solid light grey background to stand out on white */
+    .verify-card {
+      background-color: #f2f6fa;    /* very light grey-blue, no gradient */
+      border-radius: 2rem;
+      padding: 2rem 1.8rem;
+      margin: 1.8rem 0 1.8rem;
+      border: 2px solid #1e4a7a;     /* solid dark blue */
+    }
+
+    .input-label {
+      color: #0b3b5c;
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 0.6rem;
+      display: block;
+    }
+
+    .url-input-wrapper {
+      display: flex;
+      align-items: center;
+      background-color: #ffffff;
+      border-radius: 60px;
+      border: 2px solid #1e4a7a;     /* solid blue */
+      padding: 0.1rem 0.1rem 0.1rem 1.8rem;
+      transition: 0.1s;
+    }
+    .url-input-wrapper:focus-within {
+      border-color: #dc3545;          /* solid red on focus */
+    }
+
+    .url-input-wrapper input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 1rem 0.5rem 1rem 0;
+      color: #0a1c2f;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .url-input-wrapper input::placeholder {
+      color: #7f9fbf;
+      font-weight: 400;
+    }
+
+    .verify-action {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1rem;
+      justify-content: space-between;
+      margin-top: 1.2rem;
+    }
+
+    .btn-verify {
+      background-color: #28a745;      /* solid green */
+      border: none;
+      border-radius: 60px;
+      padding: 0.9rem 2.5rem;
+      font-weight: 600;
+      font-size: 1.2rem;
+      color: white;
+      cursor: pointer;
+      transition: 0.1s;
+      box-shadow: 0 4px 8px rgba(0,80,20,0.2);
+      border: 2px solid #1e7e34;       /* darker green border */
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+    }
+
+    .btn-verify:hover {
+      background-color: #218838;
+      border-color: #1c6b2f;
+    }
+
+    .btn-verify:active {
+      background-color: #1e7e34;
+      transform: scale(0.99);
+    }
+
+    .btn-verify:disabled {
+      opacity: 0.5;
+      background-color: #6c9a7a;
+      cursor: not-allowed;
+    }
+
+    .example-hint {
+      color: #0b3b5c;
+      font-size: 0.9rem;
+      background-color: #e9f0f9;
+      padding: 0.5rem 1.4rem;
+      border-radius: 60px;
+      border: 1px dashed #1e4a7a;
+    }
+
+    /* result area */
+    .result-section {
+      margin-top: 2rem;
+    }
+
+    .result-card {
+      border-radius: 1.8rem;
+      padding: 1.6rem 1.8rem;
+      background-color: #f2f6fa;      /* solid neutral */
+      border-left: 8px solid;
+      border-top: 2px solid #1e4a7a;
+      border-right: 2px solid #1e4a7a;
+      border-bottom: 2px solid #1e4a7a;
+    }
+
+    /* solid background colors for statuses */
+    .result-safe {
+      background-color: #d4edda;       /* light solid green */
+      border-left-color: #28a745;
+    }
+    .result-danger {
+      background-color: #f8d7da;       /* light solid red */
+      border-left-color: #dc3545;
+    }
+    .result-warning {
+      background-color: #fff3cd;       /* light solid yellow */
+      border-left-color: #ffc107;
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      font-weight: 600;
+      font-size: 1.4rem;
+      margin-bottom: 0.8rem;
+      color: #0b1f33;
+    }
+
+    .result-icon {
+      font-size: 2.2rem;
+    }
+
+    .url-display {
+      background-color: #ffffff;
+      padding: 0.8rem 1.2rem;
+      border-radius: 60px;
+      word-break: break-all;
+      font-family: monospace;
+      border: 2px solid #1e4a7a;
+      color: #0b1f33;
+      margin: 0.8rem 0 1rem;
+    }
+
+    .result-message {
+      font-size: 1.1rem;
+      margin: 0.5rem 0;
+      color: #031526;
+      font-weight: 500;
+    }
+
+    .timestamp {
+      font-size: 0.85rem;
+      color: #1e4a7a;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.8rem;
+      font-weight: 500;
+    }
+
+    .error-message {
+      background-color: #f8d7da;
+      color: #721c24;
+      padding: 1rem 1.8rem;
+      border-radius: 3rem;
+      border-left: 8px solid #dc3545;
+      border-top: 2px solid #dc3545;
+      border-right: 2px solid #dc3545;
+      border-bottom: 2px solid #dc3545;
+      font-weight: 500;
+    }
+
+    /* loading spinner */
+    .spinner {
+      width: 30px;
+      height: 30px;
+      border: 4px solid #cbd5e0;
+      border-radius: 50%;
+      border-top-color: #1e4a7a;      /* solid blue */
+      animation: spin 1s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .flex-row {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* footer – solid colors */
+    .footer-note {
+      margin-top: 2rem;
+      color: #0b3b5c;
+      font-size: 0.9rem;
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      border-top: 2px solid #1e4a7a;
+      padding-top: 1.2rem;
+      font-weight: 500;
+    }
+
+    /* mobile */
+    @media (max-width: 520px) {
+      .card { padding: 1.8rem 1.2rem; }
+      .brand-name { font-size: 1.8rem; }
+      .verify-action { flex-direction: column; align-items: stretch; }
+      .btn-verify { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <!-- header with shield logo + tagline (solid colors) -->
+    <div class="header">
+      <div class="logo-shield">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L4 5.5V11C4 16.3 7.8 21.3 12 22C16.2 21.3 20 16.3 20 11V5.5L12 2Z" fill="#28a745" stroke="#0b3b5c" stroke-width="1.5"/>
+          <circle cx="12" cy="12" r="3" fill="#ffffff" stroke="#0b3b5c" stroke-width="1.5"/>
+          <path d="M12 8.5L13.8 12.2L17.5 12.8L14.9 15.5L15.6 19.2L12 17L8.4 19.2L9.1 15.5L6.5 12.8L10.2 12.2L12 8.5Z" fill="#ffc107" stroke="#0b3b5c" stroke-width="0.8"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name">SafeLink AI</div>
+        <div class="tagline">Every link verified, every user protected.</div>
+      </div>
+    </div>
+
+    <!-- main verification section -->
+    <div class="verify-card">
+      <label class="input-label" for="urlInput">🔗 Paste link to verify</label>
+      <div class="url-input-wrapper">
+        <input type="url" id="urlInput" placeholder="https://example.com" value="https://example.com" autofocus>
+      </div>
+      <div class="verify-action">
+        <button class="btn-verify" id="verifyBtn">
+          <span>🛡️</span> Verify link
+        </button>
+        <span class="example-hint">
+          <span>📋 e.g., https://example.com</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- result area (dynamic) -->
+    <div class="result-section" id="resultContainer">
+      <!-- default empty state (solid neutral) -->
+      <div class="result-card" style="background-color: #eef4fa; border-left-color: #1e4a7a;">
+        <div class="result-header">
+          <span class="result-icon">🛡️</span>
+          <span>Ready to scan</span>
+        </div>
+        <div class="url-display">—</div>
+        <div class="result-message">Enter a link and click verify.</div>
+        <div class="timestamp">⏱️ just now</div>
+      </div>
+    </div>
+
+    <!-- footer with trust elements -->
+    <div class="footer-note">
+      <span style="color:#0b3b5c;">⚡ AI powered</span>
+      <span style="color:#dc3545;">🔒 bank‑grade</span>
+      <span style="color:#28a745;">🌍 protecting Africa</span>
+    </div>
+  </div>
+
+  <!-- script.js – solid behaviour, calls mock backend -->
+  <script>
+    (function() {
+      const urlInput = document.getElementById('urlInput');
+      const verifyBtn = document.getElementById('verifyBtn');
+      const resultContainer = document.getElementById('resultContainer');
+
+      // loading UI
+      function showLoadingState() {
+        resultContainer.innerHTML = `
+          <div class="result-card" style="background-color: #e9f0f9; border-left-color: #1e4a7a;">
+            <div class="flex-row" style="display: flex; align-items: center; gap: 1.2rem; padding: 0.8rem 0;">
+              <span class="spinner"></span>
+              <div>
+                <div style="font-weight:600; font-size:1.3rem; color:#0b3b5c;">Verifying link</div>
+                <div style="color:#1e4a7a;">contacting SafeLink AI ...</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // display final result with solid background classes
+      function displayResult(data, url, timestamp) {
+        const status = data.status; // 'safe', 'danger', 'warning'
+        const message = data.message || '';
+
+        let bgClass = '';
+        let icon = '';
+        let title = '';
+
+        switch(status) {
+          case 'safe':
+            bgClass = 'result-safe';
+            icon = '🟢';
+            title = 'Safe to open';
+            break;
+          case 'danger':
+            bgClass = 'result-danger';
+            icon = '🔴';
+            title = 'Suspicious / Dangerous';
+            break;
+          case 'warning':
+            bgClass = 'result-warning';
+            icon = '🟡';
+            title = 'Caution advised';
+            break;
+          default:
+            bgClass = '';
+            icon = '⚪';
+            title = 'Scan complete';
+        }
+
+        const timeString = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second:'2-digit' });
+
+        const html = `
+          <div class="result-card ${bgClass}">
+            <div class="result-header">
+              <span class="result-icon">${icon}</span>
+              <span>${title}</span>
+            </div>
+            <div class="url-display">🔗 ${escapeHtml(url)}</div>
+            <div class="result-message">${escapeHtml(message) || 'No additional details.'}</div>
+            <div class="timestamp">
+              <span>⏱️ scanned at ${timeString}</span>
+              <span style="margin-left: auto;">🔍 AI verdict</span>
+            </div>
+          </div>
+        `;
+        resultContainer.innerHTML = html;
+      }
+
+      function escapeHtml(unsafe) {
+        if (!unsafe) return unsafe;
+        return unsafe.replace(/[&<>"]/g, function(m) {
+          if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;'; if(m === '"') return '&quot;';
+          return m;
+        });
+      }
+
+      function showError(errorText, url) {
+        const timeString = new Date().toLocaleTimeString();
+        const displayUrl = url ? escapeHtml(url) : '—';
+        resultContainer.innerHTML = `
+          <div class="result-card" style="background-color: #f8d7da; border-left-color: #dc3545; border-color: #dc3545;">
+            <div class="result-header">
+              <span class="result-icon">⚠️</span>
+              <span style="color:#721c24;">Verification failed</span>
+            </div>
+            <div class="url-display" style="border-color:#dc3545;">🔗 ${displayUrl}</div>
+            <div class="result-message" style="color:#a11f2f;">${escapeHtml(errorText)}</div>
+            <div class="timestamp" style="color:#a11f2f;">⏱️ ${timeString} · please retry</div>
+          </div>
+        `;
+      }
+
+      function isValidUrl(string) {
+        try {
+          const url = new URL(string);
+          return url.protocol === 'http:' || url.protocol === 'https:';
+        } catch (_) {
+          return false;
+        }
+      }
+
+      // main verify function (simulated backend)
+      async function verifyLink() {
+        const rawUrl = urlInput.value.trim();
+
+        if (!rawUrl) {
+          showError('Please enter a link.', '');
+          return;
+        }
+
+        if (!isValidUrl(rawUrl)) {
+          showError('Invalid URL. Use http:// or https://', rawUrl);
+          return;
+        }
+
+        showLoadingState();
+
+        const payload = { url: rawUrl };
+
+        // Simulate backend call (replace with real fetch in production)
+        try {
+          await new Promise(resolve => setTimeout(resolve, 1400)); // network delay
+
+          let mockStatus = 'safe';
+          let mockMessage = 'No threats detected.';
+          const lower = rawUrl.toLowerCase();
+
+          // demo patterns (solid rules)
+          if (lower.includes('phish') || lower.includes('malicious') || lower.includes('bank-verify') || lower.includes('secure-update')) {
+            mockStatus = 'danger';
+            mockMessage = 'Known phishing domain – do not enter personal data.';
+          } else if (lower.includes('bit.ly') || lower.includes('tinyurl') || lower.includes('short.link')) {
+            mockStatus = 'warning';
+            mockMessage = 'Shortened link – unable to fully verify destination.';
+          } else if (lower.includes('example.com') || lower.includes('google.com') || lower.includes('github.com')) {
+            mockStatus = 'safe';
+            mockMessage = 'Clean & trusted domain.';
+          } else {
+            mockStatus = 'safe';
+            mockMessage = 'No issues detected.';
+          }
+
+          const responseData = { status: mockStatus, message: mockMessage };
+          displayResult(responseData, rawUrl, new Date());
+
+        } catch (error) {
+          showError('Connection error. Try again.', rawUrl);
+        }
+      }
+
+      verifyBtn.addEventListener('click', verifyLink);
+      urlInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          verifyLink();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
